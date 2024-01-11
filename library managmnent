@@ -1,0 +1,354 @@
+index.html
+<!-- login.php -->
+<?php
+session_start();
+include("db.php");
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST["username"];
+    $password = $_POST["password"];
+
+    $query = "SELECT * FROM users WHERE username='$username' AND password='$password'";
+    $result = mysqli_query($conn, $query);
+
+    if (mysqli_num_rows($result) == 1) {
+        $_SESSION["username"] = $username;
+        $_SESSION["role"] = "librarian"; // You might have a 'role' column in your users table
+        header("Location: dashboard.php");
+        exit();
+    } else {
+        echo "Invalid username or password";
+    }
+}
+?>
+
+<!-- Login Form (login.php) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Library Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="login-form">
+        <h2>Login</h2>
+        <form action="login.php" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit">Login</button>
+        </form>
+        <a href="register.php">Register</a>
+    </div>
+</body>
+</html>
+
+register.php
+<!-- register.php -->
+<?php
+session_start();
+include("db.php");
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST["username"];
+    $password = $_POST["password"];
+    $role = $_POST["role"]; // Assuming you have a role selection in the registration form
+
+    // Implement proper validation and sanitation before storing data in the database
+
+    $query = "INSERT INTO users (username, password, role) VALUES ('$username', '$password', '$role')";
+    
+    if (mysqli_query($conn, $query)) {
+        echo "Registration successful!";
+    } else {
+        echo "Error: " . mysqli_error($conn);
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Library Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="register-form">
+        <h2>Register</h2>
+        <form action="register.php" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <label for="role">Role:</label>
+            <select id="role" name="role" required>
+                <option value="librarian">Librarian</option>
+                <option value="student">Student</option>
+            </select>
+
+            <button type="submit">Register</button>
+        </form>
+    </div>
+</body>
+</html>
+
+<!-- login.php -->
+<?php
+session_start();
+include("db.php");
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST["username"];
+    $password = $_POST["password"];
+
+    $query = "SELECT * FROM users WHERE username='$username' AND password='$password'";
+    $result = mysqli_query($conn, $query);
+
+    if (mysqli_num_rows($result) == 1) {
+        $_SESSION["username"] = $username;
+        $_SESSION["role"] = "librarian"; // You might have a 'role' column in your users table
+        header("Location: dashboard.php");
+        exit();
+    } else {
+        echo "Invalid username or password";
+    }
+}
+?>
+
+login.php
+<!-- Login Form (login.php) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Library Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="login-form">
+        <h2>Login</h2>
+        <form action="login.php" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit">Login</button>
+        </form>
+        <a href="register.php">Register</a>
+    </div>
+</body>
+</html>
+
+styles.css
+/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+}
+
+#login-form {
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+}
+
+nav {
+    background-color: #333;
+    color: white;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+nav li {
+    float: left;
+}
+
+nav a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+nav a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+#add-book-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+}
+
+#search-book-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+}
+
+dashboard.html
+<!-- dashboard.php -->
+<?php
+session_start();
+if (!isset($_SESSION["username"])) {
+    header("Location: login.php");
+    exit();
+}
+
+$role = $_SESSION["role"];
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Library Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Welcome, <?php echo ucfirst($role); ?>!</h1>
+    <nav>
+        <ul>
+            <?php if ($role === "librarian"): ?>
+                <li><a href="add_book.php">Add Book</a></li>
+                <li><a href="search_book.php">Search Book</a></li>
+            <?php elseif ($role === "student"): ?>
+                <li><a href="search_book.php">Search Book</a></li>
+                <li><a href="borrowing_history.php">Borrowing History</a></li>
+                <li><a href="check_fine.php">Check Fine</a></li>
+                <!-- Add other options for students -->
+            <?php endif; ?>
+        </ul>
+        <a href="logout.php">Logout</a>
+    </nav>
+</body>
+</html>
+
+add_book.php
+<!-- add_book.php -->
+<?php
+session_start();
+include("db.php");
+
+if (!isset($_SESSION["username"]) || $_SESSION["role"] !== "librarian") {
+    header("Location: login.php");
+    exit();
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $title = $_POST["title"];
+    $author = $_POST["author"];
+    $quantity = $_POST["quantity"];
+
+    $query = "INSERT INTO books (title, author, quantity) VALUES ('$title', '$author', $quantity)";
+    mysqli_query($conn, $query);
+
+    echo "Book added successfully!";
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Book - Library Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="add-book-form">
+        <h2>Add Book</h2>
+        <form action="add_book.php" method="post">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" required>
+
+            <label for="author">Author:</label>
+            <input type="text" id="author" name="author" required>
+
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" required>
+
+            <button type="submit">Add Book</button>
+        </form>
+    </div>
+</body>
+</html>
+
+search_book.php
+<!-- search_book.php -->
+<?php
+session_start();
+if (!isset($_SESSION["username"])) {
+    header("Location: login.php");
+    exit();
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $searchTerm = $_POST["searchTerm"];
+
+    $query = "SELECT * FROM books WHERE title LIKE '%$searchTerm%' OR author LIKE '%$searchTerm%'";
+    $result = mysqli_query($conn, $query);
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        echo "Title: " . $row["title"] . "<br>";
+        echo "Author: " . $row["author"] . "<br>";
+        echo "Quantity: " . $row["quantity"] . "<br><br>";
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Book - Library Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="search-book-form">
+        <h2>Search Book</h2>
+        <form action="search_book.php" method="post">
+            <label for="searchTerm">Search Term:</label>
+            <input type="text" id="searchTerm" name="searchTerm" required>
+
+            <button type="submit">Search</button>
+        </form>
+    </div>
+</body>
+</html>
+
+db.php
+<!-- db.php -->
+<?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$database = "library_db";
+
+$conn = new mysqli($servername, $username, $password, $database);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+?>
