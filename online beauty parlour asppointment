@@ -1,0 +1,344 @@
+index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Beauty Salon - Book Your Appointment Now!</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Your Beauty Salon</h1>
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="gallery.html">Gallery</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="login.php">Login</a></li>
+                <li><a href="register.php">Register</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h2>Book Your Appointment</h2>
+        <p>Find the perfect time for your desired service with our convenient booking system!</p>
+        <form action="search.php" method="get">
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required>
+            <label for="service">Service:</label>
+            <select name="service" id="service">
+                <option value="">Select Service</option>
+                <option value="haircut">Haircut</option>
+                <option value="massage">Massage</option>
+                <option value="facial">Facial</option>
+                </select>
+            <button type="submit">Search</button>
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2024 Your Beauty Salon. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+
+calendar.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Beauty Salon - Appointment Calendar</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Your Beauty Salon</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li class="active"><a href="#">Calendar</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="gallery.html">Gallery</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="logout.php">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h2>Appointment Calendar</h2>
+        </main>
+    <footer>
+        <p>&copy; 2024 Your Beauty Salon. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+
+search.php
+<?php
+// Connect to database
+require_once("connect.php");
+
+// Get search parameters
+$date = $_GET['date'];
+$service = $_GET['service'];
+
+// Prepare SQL query to retrieve available timeslots
+$sql = "SELECT * FROM timeslots WHERE DATE(date) = ? AND service = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ss", $date, $service);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Fetch and display available timeslots
+while ($row = $result->fetch_assoc()) {
+    echo "<div class='timeslot'>" . $row['time'] . "</div>";
+}
+?>
+
+about.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Beauty Salon - About Us</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        </header>
+    <main>
+        <h2>About Us</h2>
+        <section class="about-content">
+            <p>Welcome to Your Beauty Salon, where we believe in enhancing your natural beauty and making you feel your best!</p>
+            <p>We are passionate about providing exceptional service and creating a relaxing and enjoyable experience for our clients.</p>
+            </section>
+    </main>
+    <footer>
+        </footer>
+</body>
+</html>
+
+services.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Beauty Salon - Services</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        </header>
+    <main>
+        <h2>Our Services</h2>
+        <section class="services-list">
+            <div class="service">
+                <h3>Haircut</h3>
+                <p>From classic trims to stylish makeovers, our expert stylists will create the perfect haircut to complement your features and style.</p>
+                <p>Starting from $45</p>
+            </div>
+            </section>
+    </main>
+    <footer>
+        </footer>
+</body>
+</html>
+
+gallery.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Beauty Salon - Gallery</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        </header>
+    <main>
+        <h2>Our Gallery</h2>
+        <section class="gallery">
+            <div class="image-container">
+                <img src="hairstyle1.jpg" alt="Hairstyle 1">
+            </div>
+            </section>
+    </main>
+    <footer>
+        </footer>
+</body>
+</html>
+
+register.php
+<?php
+// Connect to database
+require_once("connect.php");
+
+// Check if form is submitted
+if (isset($_POST['register'])) {
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $password = mysqli_real_escape_string($conn, $_POST['password']);
+
+    // Validate user input
+    // ... (Implement validation rules)
+
+    // Check for existing user
+    $sql = "SELECT * FROM users WHERE username = '$username' OR email = '$email'";
+    $result = mysqli_query($conn, $sql);
+    if (mysqli_num_rows($result) > 0) {
+        echo "Username or email already exists.";
+    } else {
+        // Hash password
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // Insert user into database
+        $sql = "INSERT INTO users (username, email, password) VALUES ('$username', '$email', '$hashed_password')";
+        if (mysqli_query($conn, $sql)) {
+            echo "Registration successful!";
+        } else {
+            echo "Registration failed.";
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Registration</title>
+</head>
+<body>
+
+<h1>Register</h1>
+
+<form method="post">
+  <label for="username">Username:</label>
+  <input type="text" id="username" name="username">
+  <br>
+  <label for="email">Email:</label>
+  <input type="email" id="email" name="email">
+  <br>
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password">
+  <br>
+  <button type="submit" name="register">Register</button>
+</form>
+</body>
+</html>
+
+connect.php
+<?php
+// Database credentials (replace with your actual values)
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "beauty_salon";
+
+// Create connection
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+
+// Check connection
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+?>
+
+login.php
+<?php
+// Connect to database
+require_once("connect.php");
+
+// Check if form is submitted
+if (isset($_POST['login'])) {
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $password = mysqli_real_escape_string($conn, $_POST['password']);
+
+    // Retrieve user information
+    $sql = "SELECT * FROM users WHERE username = '$username'";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+
+    // Check password
+    if (password_verify($password, $row['password'])) {
+        // Start a session
+        session_start();
+        $_SESSION['user_id'] = $row['id'];
+        header("Location: index.php"); // Redirect to homepage
+    } else {
+        echo "Invalid username or password.";
+    }
+}
+?>
+
+<form method="post">
+    <button type="submit" name="login">Login</button>
+</form>
+
+styles.css
+/* General styling */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  header {
+    background-color: #f0f0f0;
+    padding: 20px;
+  }
+  
+  header a {
+    text-decoration: none;
+    color: black;
+  }
+  
+  main {
+    padding: 20px;
+  }
+  
+  h1, h2, h3 {
+    font-weight: bold;
+  }
+  
+  a {
+    color: #007bff; /* Link color */
+  }
+  
+  /* About Us page */
+  .about-content {
+    text-align: justify;
+  }
+  
+  /* Services page */
+  .services-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  
+  .service {
+    flex-basis: 30%;
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  /* Gallery page */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+  }
+  
+  /* Footer */
+  footer {
+    background-color: #f0f0f0;
+    padding: 10px;
+    text-align: center;
+  }
+  
