@@ -1,0 +1,312 @@
+index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy a Cake - Order Delicious Treats!</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Buy a Cake</h1>
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="cakes.html">Cakes</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="register.php">Register</a></li>
+                <li><a href="login.php">Admin and Customer Login</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h2>Welcome to Buy a Cake!</h2>
+        <p>Discover delicious cakes from local bakers near you. Support rural communities by indulging in their delightful treats!</p>
+        <button type="button" onclick="location.href='cakes.html'">Browse Cakes</button>
+    </main>
+    <footer>
+        <p>&copy; 2024 Buy a Cake. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+
+styles.css
+/* General styling for the entire website */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  header, main, footer {
+    padding: 2rem;
+  }
+  
+  /* Navbar styling */
+  .navbar {
+    background-color: #f8f9fa; /* Light gray */
+    border-bottom: 1px solid #e5e5e5; /* Lighter gray */
+  }
+  
+  .navbar-brand {
+    font-weight: bold;
+  }
+  
+  /* Hero section styling */
+  .hero {
+    background-color: #343a40; /* Dark blue */
+    color: #fff; /* White text */
+    text-align: center;
+    padding: 5rem 0;
+  }
+  
+  .hero h2 {
+    font-size: 2.5rem;
+  }
+  
+  .btn-primary {
+    background-color: #007bff; /* Bootstrap primary color */
+    border-color: #007bff;
+  }
+  
+  /* Featured destinations styling */
+  .card-columns {
+    column-count: 2;
+    column-gap: 1rem;
+  }
+  
+  .card-img-top {
+    width: 100%;
+    height: 200px; /* Adjust as needed */
+    object-fit: cover;
+  }
+  
+  /* Recent reviews styling */
+  .blockquote {
+    border-left: 5px solid #e5e5e5; /* Gray border */
+    padding: 1rem;
+    font-size: 1.2rem;
+  }
+  
+  /* Footer styling */
+  footer {
+    background-color: #f8f9fa; /* Light gray */
+    text-align: center;
+  }
+
+login.php
+<?php
+// Connect to the database
+require_once("connect.php");
+
+// If form is submitted
+if (isset($_POST['username'])) {
+    // Validate user input
+    $errors = [];
+    if (empty($_POST['username'])) {
+        $errors[] = "Username is required.";
+    }
+    if (empty($_POST['password'])) {
+        $errors[] = "Password is required.";
+    }
+
+    // If no errors, proceed with authentication
+    if (empty($errors)) {
+        // Prepare SQL query using parameterized statements to prevent SQL injection
+        $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->bind_param("s", $_POST['username']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+
+        // If user found, verify password
+        if ($user) {
+            if (password_verify($_POST['password'], $user['password'])) {
+                // Successful login
+                session_start();
+                $_SESSION['user_id'] = $user['id'];
+                // Redirect to appropriate page (dashboard or user profile)
+                header("Location: dashboard.php"); // Replace with the correct destination
+                exit;
+            } else {
+                $errors[] = "Invalid username or password.";
+            }
+        } else {
+            $errors[] = "Invalid username or password.";
+        }
+    }
+}
+
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Buy a Cake</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h2>Login</h2>
+    <form action="login.php" method="post">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+        <button type="submit">Login</button>
+    </form>
+    <?php if (!empty($errors)): ?>
+        <ul>
+            <?php foreach ($errors as $error): ?>
+                <li><?php echo $error; ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+</body>
+</html>
+
+connect.php
+<?php
+// Database credentials (replace with your actual values)
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "buy_a_cake"; // Assuming this is the database name
+
+// Create connection
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+
+// Check connection
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+?>
+
+<?php
+// Connect to the database
+require_once("connect.php");
+
+// If form is submitted
+if (isset($_POST['username'])) {
+    // Validate user input
+    $errors = [];
+    if (empty($_POST['username'])) {
+        $errors[] = "Username is required.";
+    }
+    if (empty($_POST['password'])) {
+        $errors[] = "Password is required.";
+    }
+    if (empty($_POST['email'])) {
+        $errors[] = "Email is required.";
+    }
+    // Add more validation for other fields as needed
+
+    // Check if username already exists
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
+    $stmt->bind_param("s", $_POST['username']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        $errors[] = "Username already exists.";
+    }
+
+    // If no errors, proceed with registration
+    if (empty($errors)) {
+        // Hash the password
+        $hashed_password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+
+        // Prepare SQL query using parameterized statements
+        $stmt = $conn->prepare("INSERT INTO users (username, password, email) VALUES (?, ?, ?)");
+        // Bind parameters (replace placeholders with actual column names)
+        $stmt->bind_param("sss", $_POST['username'], $hashed_password, $_POST['email']);
+        // ... (Bind other fields as needed)
+
+        if ($stmt->execute()) {
+            echo "<p>Registration successful!</p>";
+            // Optionally redirect to login page
+        } else {
+            echo "<p>Registration failed. Please try again.</p>";
+        }
+    } else {
+        // Display errors
+        echo "<ul>";
+        foreach ($errors as $error) {
+            echo "<li>$error</li>";
+        }
+        echo "</ul>";
+    }
+}
+
+register.php
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - Buy a Cake</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h2>Register</h2>
+    <form action="register.php" method="post">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+        <button type="submit">Register</button>
+    </form>
+</body>
+</html>
+
+cakes.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy a Cake - Browse Delicious Treats!</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Buy a Cake</h1>
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li class="active"><a href="#">Cakes</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="login.php">Admin Login</a></li>
+            </ul>
+        </nav>
+        <form action="#">
+            <label for="category">Category:</label>
+            <select name="category" id="category">
+                <option value="">All Categories</option>
+                <option value="Chocolate">Chocolate</option>
+                <option value="Fruit">Fruit</option>
+                <option value="Cheesecake">Cheesecake</option>
+            </select>
+            <label for="price_range">Price Range:</label>
+            <select name="price_range" id="price_range">
+                <option value="">All Prices</option>
+                <option value="below_100">Below $100</option>
+                <option value="100_200">$100 - $200</option>
+                <option value="above_200">Above $200</option>
+            </select>
+            <button type="submit">Filter</button>
+        </form>
+    </header>
+    <main>
+        <h2>Browse our Delicious Cakes!</h2>
+        <a href="cake-card.html">
+            <img src="/cake1.jpg" alt="Delicious Chocolate Cake">
+            <h3>Chocolate Delight</h3>
+            <p>Rich and decadent chocolate cake with creamy frosting.</p>
+        </a>
+        </main>
+    <footer>
+        <p>&copy; 2024 Buy a Cake. All rights reserved.</p>
+    </footer>
+</body>
+</html>
