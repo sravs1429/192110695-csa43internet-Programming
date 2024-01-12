@@ -1,0 +1,193 @@
+index.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Booking System</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Welcome to our Hotel!</h1>
+    <a href="booking.php">Book a Room</a>
+    <a href="profile.php">Profile</a>
+    <script src="js/main.js"></script>
+</body>
+</html>
+
+main.js
+
+function bookRoom() {
+    // Assuming you have input elements with ids 'checkInDate' and 'checkOutDate'
+    var checkInDate = document.getElementById('checkInDate').value;
+    var checkOutDate = document.getElementById('checkOutDate').value;
+
+    // Perform validation on check-in and check-out dates
+    if (checkInDate === "" || checkOutDate === "") {
+        alert("Please select both check-in and check-out dates.");
+        return;
+    }
+
+    // Assuming you have an AJAX library like jQuery
+    $.ajax({
+        url: 'php/booking.php',
+        type: 'POST',
+        data: {
+            checkInDate: checkInDate,
+            checkOutDate: checkOutDate
+            // Add more data if needed
+        },
+        success: function(response) {
+            alert(response);
+            response="Booking Successful" // Display the server response (e.g., success message or error)
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX request failed:", status, error);
+        }
+    });
+}
+
+config.php
+
+<?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$database = "hotel_booking_db1";
+
+$conn = new mysqli($servername, $username, $password, $database);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+?>
+
+profile.php
+
+<?php
+include("config.php");
+
+// Check if the user is logged in
+session_start();
+if (!isset($_SESSION["user_id"])) {
+    header("Location: login.php"); // Redirect to the login page if not logged in
+    exit();
+}
+
+// Fetch user data from the database
+$user_id = $_SESSION["user_id"];
+$query = "SELECT * FROM users WHERE id = $user_id";
+$result = mysqli_query($conn, $query);
+
+if ($result) {
+    $user = mysqli_fetch_assoc($result);
+} else {
+    echo "Error fetching user data: " . mysqli_error($conn);
+    // Handle the error appropriately, e.g., redirect to an error page
+    exit();
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h2>User Profile</h2>
+    <p><strong>Username:</strong> <?php echo $user["username"]; ?></p>
+    <p><strong>Email:</strong> <?php echo $user["email"]; ?></p>
+    <!-- Add more user profile information as needed -->
+
+    <a href="logout.php">Logout</a> <!-- Add a logout link if needed -->
+</body>
+</html>
+
+logout.php
+
+<?php
+session_start();
+
+// Unset all session variables
+$_SESSION = array();
+
+// Destroy the session
+session_destroy();
+
+// Redirect to the login page
+header("Location: login.php");
+exit();
+?>
+
+booking.php
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Booking</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h2>Book a Room</h2>
+    <form id="bookingForm">
+        <!-- Room booking form -->
+        <label for="checkInDate">Check-in Date:</label>
+        <input type="date" id="checkInDate" name="checkInDate" required>
+
+        <label for="checkOutDate">Check-out Date:</label>
+        <input type="date" id="checkOutDate" name="checkOutDate" required>
+
+        <button type="button" onclick="bookRoom()">Book Room</button>
+    </form>
+    <script src="js/main.js"></script>
+</body>
+</html>
+
+styles.css
+
+/* Your CSS styles */
+body {
+    font-family: Arial, sans-serif;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+a {
+    display: block;
+    margin-bottom: 10px;
+    text-decoration: none;
+    color: #0066cc;
+}
+
+form {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+button {
+    background-color: #0066cc;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
