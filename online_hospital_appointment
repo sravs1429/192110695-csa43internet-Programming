@@ -1,0 +1,293 @@
+index.html<
+!DOCTYPE html>
+<html>
+<head>
+<title>Hospital Appointment Booking</title>
+<link rel="stylesheet" href="styles.css"> </head>
+<body>
+  <header>
+    <h1>Book Hospital Appointments Easily</h1>
+    <p>Find the best healthcare facilities and schedule appointments with ease.</p>
+    <div class="search-bar">
+      <input type="text" placeholder="Search by location">
+      <button>Search</button>
+    </div>
+    <div class="buttons">
+      <a href="signup.php">Sign Up</a>
+      <a href="login.php">Log In</a>
+      <a href="appointment.php">Appointment</a>
+    </div>
+  </header>
+  <section class="featured-hospitals">
+    </section>
+</body>
+</html>
+
+appointment.php
+<!DOCTYPE html>
+<html>
+<head>
+<title>Book Appointment</title>
+</head>
+<body>
+<h1>Book Appointment</h1>
+
+<?php
+// Connect to database
+require_once("connect.php");
+
+// Check if form is submitted
+if (isset($_POST['book_appointment'])) {
+    // Retrieve form data
+    $patient_name = mysqli_real_escape_string($conn, $_POST['patient_name']);
+    $appointment_date = $_POST['appointment_date'];
+    $appointment_time = $_POST['appointment_time'];
+
+    // Validate user input (implement validation rules here)
+
+    // Check availability in the database (modify for your specific table structure)
+    $sql = "SELECT * FROM appointments WHERE appointment_date = '$appointment_date' AND appointment_time = '$appointment_time'";
+    $result = mysqli_query($conn, $sql);
+    if (mysqli_num_rows($result) > 0) {
+        echo "Appointment time already booked. Please choose another time.";
+    } else {
+        // Insert appointment into the database (modify for your specific table structure)
+        $sql = "INSERT INTO appointments (patient_name, appointment_date, appointment_time)
+                VALUES ('$patient_name', '$appointment_date', '$appointment_time')";
+        if (mysqli_query($conn, $sql)) {
+            // Send confirmation email (implement email sending functionality here)
+            echo "Appointment booked successfully! Check your email for confirmation.";
+        } else {
+            echo "Error booking appointment. Please try again.";
+        }
+    }
+} else {
+    // Display the appointment booking form
+?>
+
+<form method="post">
+  <label for="patient_name">Patient Name:</label>
+  <input type="text" id="patient_name" name="patient_name">
+  <br>
+  <label for="appointment_date">Appointment Date:</label>
+  <input type="date" id="appointment_date" name="appointment_date">
+  <br>
+  <label for="appointment_time">Appointment Time:</label>
+  <select id="appointment_time" name="appointment_time">
+    </select>
+  <br>
+  <button type="submit" name="book_appointment">Book Appointment</button>
+</form>
+
+<?php
+} // End of form submission check
+?>
+
+</body>
+</html>
+
+connect.php
+<?php
+$servername = "localhost"; // Replace with your server name or IP address
+$username = "root"; // Replace with your database username
+$password = ""; // Replace with your database password
+$dbname = "hospital_db"; // Replace with your database name
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+?>
+
+login.php
+<!DOCTYPE html>
+<html>
+<head>
+<title>Log In For Staff</title>
+</head>
+<body>
+<h1>Log In</h1>
+
+<?php
+// Connect to database
+require_once("connect.php");
+
+// Check if form is submitted
+if (isset($_POST['login'])) {
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $password = $_POST['password'];
+
+    // Retrieve user information
+    $sql = "SELECT * FROM users WHERE username = '$username'";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+
+    // Check password
+    if (password_verify($password, $row['password'])) {
+        // Start a session
+        session_start();
+        $_SESSION['user_id'] = $row['id'];
+        header("Location: index.php"); // Redirect to homepage
+    } else {
+        echo "Invalid username or password.";
+    }
+}
+?>
+
+<form method="post">
+  <label for="username">Username:</label>
+  <input type="text" id="username" name="username">
+  <br>
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password">
+  <br>
+  <button type="submit" name="login">Log In</button>
+</form>
+</body>
+</html>
+
+index.php
+<!DOCTYPE html>
+<html>
+<head>
+<title>Hospital Appointment Booking</title>
+<link rel="stylesheet" href="styles.css"> </head>
+<body>
+  <header>
+    <h1>Book Hospital Appointments Easily</h1>
+    <p>Find the best healthcare facilities and schedule appointments with ease.</p>
+    <div class="search-bar">
+      <input type="text" placeholder="Search by location">
+      <button>Search</button>
+    </div>
+    <div class="buttons">
+      <a href="signup.php">Sign Up</a>
+      <a href="login.php">Log In</a>
+      <a href="appointment.php">Appointment</a>
+    </div>
+  </header>
+  <section class="featured-hospitals">
+    </section>
+</body>
+</html>
+
+signup.php
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sign Up</title>
+</head>
+<body>
+<h1>Sign Up</h1>
+
+<?php
+// Connect to database
+require_once("connect.php");
+
+// Check if form is submitted
+if (isset($_POST['signup'])) {
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $password = $_POST['password']; // Use password_hash() later
+
+    // Validate user input
+    // ... (Implement validation rules)
+
+    // Check for existing user
+    $sql = "SELECT * FROM users WHERE username = '$username' OR email = '$email'";
+    $result = mysqli_query($conn, $sql);
+    if (mysqli_num_rows($result) > 0) {
+        echo "Username or email already exists.";
+    } else {
+        // Hash password
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // Insert user into database
+        $sql = "INSERT INTO users (username, email, password) VALUES ('$username', '$email', '$hashed_password')";
+        if (mysqli_query($conn, $sql)) {
+            echo "Registration successful!";
+        } else {
+            echo "Registration failed.";
+        }
+    }
+}
+?>
+
+<form method="post">
+  <label for="username">Username:</label>
+  <input type="text" id="username" name="username">
+  <br>
+  <label for="email">Email:</label>
+  <input type="email" id="email" name="email">
+  <br>
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password">
+  <br>
+  <button type="submit" name="signup">Sign Up</button>
+</form>
+</body>
+</html>
+
+styles.css
+/* styles.css */
+body {
+    font-family: sans-serif;
+    padding: 20px;
+  }
+  
+  header {
+    text-align: center;
+    background-color: #f0f0f0;
+    padding: 20px;
+  }
+  
+  h1 {
+    font-size: 2em;
+    margin-bottom: 10px;
+  }
+  
+  .search-bar {
+    display: flex;
+    margin-bottom: 20px;
+  }
+  
+  input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-right: 10px;
+  }
+  
+  button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .buttons a {
+    text-decoration: none;
+    color: #007bff;
+    padding: 10px 20px;
+    border: 1px solid #007bff;
+    border-radius: 5px;
+  }
+  
+  .featured-hospitals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
